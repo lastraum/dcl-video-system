@@ -1,18 +1,7 @@
-## SDK Library
 
-This project has the basics to start building your own library for using in Decentraland scenes.
+# dcl-video-system
 
-The libraries in the [Awesome Repository](https://github.com/decentraland-scenes/Awesome-Repository#Libraries) are available for all to use. We encourage you to create and share your own as well, we'd love to see the community grow and start sharing more reusable solutions to common problems through libraries!
-
-## Publish
-
-See [Create Libraries]() for tips on how to design and develop your library, and for simple instructions for publishing it to NPM.
-
-Below is a template to help you craft documentation for your library, so others know how to use it.
-
-# MyAmazingLibrary Documentation
-
-myAmazingLibrary includes helpful solutions for `< insert use case >` in a Decentraland scene.
+This library makes it easier to switch on / off a live stream automatically and play a list of videos in a loop.
 
 ## Install
 
@@ -21,54 +10,43 @@ To use any of the helpers provided by this library:
 1. Install it as an npm package. Run this command in your scene's project folder:
 
    ```
-   npm install myAmazingLibrary
+   npm install dcl-video-system
    ```
 
 2. Add this line at the start of your game.ts file, or any other TypeScript files that require it:
 
    ```ts
-   import * as magic from 'myAmazingLibrary'
+   import * as vs from 'dcl-video-system'
    ```
 
 ## Usage
 
-### < use case 1 >
-
-To do `< insert use case >`, add the `MyAmazingComponent` component to the entity.
-
-MyAmazingComponent requires two arguments when being constructed:
-
-- `start`: Vector3 for the start position
-- `duration`: duration (in seconds)
-
-MyAmazingComponent can optionally also take the following argument:
-
-- `color`: Color4 value for the color. If not provided, the default value is `Color4.Red()`
-
-This example uses MyAmazingComponent to do `< insert use case >` to an entity over a period of 2 seconds:
-
+### Create the Video System
+1. Create the video system passing in the configuration parameters:
 ```ts
-import * as magic from 'myAmazingLibrary'
-
-// Create entity
-const box = new Entity()
-
-// Give entity a shape and transform
-box.addComponent(new BoxShape())
-box.addComponent(new Transform())
-
-// Move entity
-box.addComponent(new magic.MyAmazingComponent(new Vector3(1, 1, 1), 2))
-
-// Add entity to engine
-engine.addEntity(box)
+let videoSystem = new vs.VideoSystem({
+   emission: 1.2,
+   type: vs.Types.LIVE,
+   offType: vs.Types.PLAYLIST,
+   liveLink: "https://streams.com/live/ets/livestream.m3u8",
+   playList:[
+     "https://player.vimeo.com/external/232323.m3u8?s=134343433434",
+     "https://player.vimeo.com/external/11111.m3u8?s=1343434323434"]
+})
+```
+2. To start the video system anywhere in your scene passing in an optional `volume` number
+```ts
+videoSystem.start(.1)
+```
+3. Add the `VideoSystem` material to your plane shapes
+```ts
+let ent = new Entity()
+ent.addComponent(new PlaneShape())
+ent.addComponent(videoSystem.mat)
+ent.addComponent(new Transform({position: new Vector3(16,5,16), rotation:Quaternion.Euler(0,180,0), scale: new Vector3(16,9,1)}))
+engine.addEntity(ent)
 ```
 
-> Note: Be aware that if < other use case >, MyAmazingComponent will < do some other thing >.
-
-### < use case 2 >
-
-...
 
 ## Copyright info
 
