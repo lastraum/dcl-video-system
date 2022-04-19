@@ -1,3 +1,3 @@
 export { VideoSystem } from './videoSystem'
-export { VideoTypes } from './videoSystem'
-export { VideoSystemConfig } from './videoSystem'
+export { Types } from './videoSystem'
+export { Config } from './videoSystem'

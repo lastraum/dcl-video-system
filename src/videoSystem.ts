@@ -1,13 +1,13 @@
 
-export enum VideoTypes{
+export enum Types{
     LIVE,
     PLAYLIST,
     NONE
 }
 
-export type VideoSystemConfig = {
-    type:VideoTypes,
-    offType:VideoTypes,
+export type Config = {
+    type:Types,
+    offType:Types,
     liveLink:string,
     playList?:string[],
     offImage?:string,
@@ -23,10 +23,10 @@ export class VideoSystem{
     started = false
     texture: VideoTexture
     material: Material
-    data:VideoSystemConfig
+    data:Config
     playlist:VideoPlaylist
 
-    constructor(data:VideoSystemConfig){
+    constructor(data:Config){
         this.data = data
         this.texture = new VideoTexture(new VideoClip(this.data.liveLink))
         this.material = new Material()
@@ -65,8 +65,8 @@ export class VideoSystem{
     }
 
     startLive(){
-        if(this.data.type != VideoTypes.LIVE && !this.started){
-            this.data.type = VideoTypes.LIVE
+        if(this.data.type != Types.LIVE && !this.started){
+            this.data.type = Types.LIVE
             this.start()
         }
     }
@@ -103,7 +103,7 @@ export class VideoSystem{
           this.playing = true
           this.texture.playing = false
 
-          if(this.data.offType == VideoTypes.PLAYLIST){
+          if(this.data.offType == Types.PLAYLIST){
             this.playlist.start()
           }
           else{
@@ -121,7 +121,7 @@ export class VideoSystem{
     }
 
     stop(){
-        if(this.data.type == VideoTypes.LIVE){
+        if(this.data.type == Types.LIVE){
             this.texture.playing = false
             this.live = false
             this.playing = false
@@ -136,7 +136,7 @@ export class VideoSystem{
         if(vol){
             this.data.volume = vol
         }
-        if(this.data.type == VideoTypes.LIVE){
+        if(this.data.type == Types.LIVE){
             engine.addSystem(this)
         }
         else{
@@ -151,7 +151,7 @@ export class VideoSystem{
         this.texture = new VideoTexture(new VideoClip(""))
         this.material.albedoTexture = this.texture
         this.material.emissiveTexture = this.texture
-        // if(this.data.offType == VideoTypes.IMAGE){
+        // if(this.data.offType == Types.IMAGE){
         //     log('need to display an image')
         //     this.material.albedoTexture = new Texture(this.data.offImage ? this.data.offImage : "")
         //     this.material.emissiveTexture = new Texture(this.data.offImage ? this.data.offImage : "")
