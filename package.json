@@ -1,7 +1,7 @@
 {
-  "name": "sdk-library",
+  "name": "dcl-video-system",
   "version": "1.0.0",
-  "description": "Dcl SDK Library",
+  "description": "DCL Video System to switch between a live stream and a playlist of videos",
   "main": "./dist/index.js",
   "scripts": {
     "build": "rollup -c --environment BUILD:production",
