@@ -6,7 +6,6 @@ export enum VideoTypes{
 }
 
 export type VideoSystemConfig = {
-    material: Material,
     type:VideoTypes,
     offType:VideoTypes,
     liveLink:string,
@@ -23,15 +22,15 @@ export class VideoSystem{
     playing = false
     started = false
     texture: VideoTexture
-    mat: Material
+    material: Material
     data:VideoSystemConfig
     playlist:VideoPlaylist
 
     constructor(data:VideoSystemConfig){
         this.data = data
         this.texture = new VideoTexture(new VideoClip(this.data.liveLink))
-        this.mat = this.data.material
-        this.playlist = new VideoPlaylist(this, this.mat, this.data.playList, this.data.noLoop ? this.data.noLoop : undefined)
+        this.material = new Material()
+        this.playlist = new VideoPlaylist(this, this.material, this.data.playList, this.data.noLoop ? this.data.noLoop : undefined)
     }
     
     update(dt:number){
@@ -60,7 +59,7 @@ export class VideoSystem{
             }
         }
     }
-    
+
     setVolume(vol:number){
         this.data.volume = vol
     }
@@ -89,11 +88,11 @@ export class VideoSystem{
           this.texture.playing = true
           this.texture.volume = this.data.volume ? this.data.volume : 1
 
-          this.mat.albedoTexture = this.texture;
-          this.mat.emissiveTexture = this.texture;
-          this.mat.emissiveIntensity = this.data.emission
-          this.mat.emissiveColor = Color3.White()
-          this.mat.roughness = 1
+          this.material.albedoTexture = this.texture;
+          this.material.emissiveTexture = this.texture;
+          this.material.emissiveIntensity = this.data.emission
+          this.material.emissiveColor = Color3.White()
+          this.material.roughness = 1
       }   
     }
   
@@ -112,8 +111,8 @@ export class VideoSystem{
           }
 
 
-          this.mat.albedoTexture = this.texture;
-          this.mat.emissiveTexture = this.texture;
+          this.material.albedoTexture = this.texture;
+          this.material.emissiveTexture = this.texture;
 
           this.texture.playing = true
           this.texture.loop = true
@@ -150,12 +149,12 @@ export class VideoSystem{
     off(){
         log('we are here, lets turn off')
         this.texture = new VideoTexture(new VideoClip(""))
-        this.mat.albedoTexture = this.texture
-        this.mat.emissiveTexture = this.texture
+        this.material.albedoTexture = this.texture
+        this.material.emissiveTexture = this.texture
         // if(this.data.offType == VideoTypes.IMAGE){
         //     log('need to display an image')
-        //     this.mat.albedoTexture = new Texture(this.data.offImage ? this.data.offImage : "")
-        //     this.mat.emissiveTexture = new Texture(this.data.offImage ? this.data.offImage : "")
+        //     this.material.albedoTexture = new Texture(this.data.offImage ? this.data.offImage : "")
+        //     this.material.emissiveTexture = new Texture(this.data.offImage ? this.data.offImage : "")
         // }
     }
   }
@@ -167,7 +166,7 @@ export class VideoSystem{
     playing = false
 
     parentSystem:VideoSystem
-    mat: Material
+    material: Material
     texture:VideoTexture
     links: any
     exists = false
@@ -176,7 +175,7 @@ export class VideoSystem{
 
     constructor(system:VideoSystem, mat:Material, links:any, noLoop?:boolean){
         this.parentSystem = system
-        this.mat = mat
+        this.material = mat
         this.links = links
         this.texture = new VideoTexture(new VideoClip(this.links[0]))
         if(noLoop){
@@ -240,12 +239,12 @@ export class VideoSystem{
     playVideo(index: number){
         this.texture.playing = false
         this.texture = new VideoTexture(new VideoClip(this.links[this.index]))
-        this.mat.albedoTexture = this.texture
-        this.mat.emissiveTexture = this.texture
+        this.material.albedoTexture = this.texture
+        this.material.emissiveTexture = this.texture
 
-        this.mat.emissiveIntensity = this.parentSystem.data.emission
-        this.mat.emissiveColor = Color3.White()
-        this.mat.roughness = 1
+        this.material.emissiveIntensity = this.parentSystem.data.emission
+        this.material.emissiveColor = Color3.White()
+        this.material.roughness = 1
         this.texture.playing = true
         this.texture.volume = this.volume
 
