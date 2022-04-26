@@ -1,13 +1,13 @@
 
-export enum Types{
+export enum VideoSystemTypes{
     LIVE,
     PLAYLIST,
     NONE
 }
 
-export type Config = {
-    type:Types,
-    offType:Types,
+export type VideoSystemConfig = {
+    type:VideoSystemTypes,
+    offType:VideoSystemTypes,
     liveLink:string,
     playList?:string[],
     offImage?:string,
@@ -23,10 +23,10 @@ export class VideoSystem{
     started = false
     texture: VideoTexture
     material: Material
-    data:Config
+    data:VideoSystemConfig
     playlist:VideoPlaylist
 
-    constructor(data:Config){
+    constructor(data:VideoSystemConfig){
         this.data = data
         this.texture = new VideoTexture(new VideoClip(this.data.liveLink))
         this.material = new Material()
@@ -65,8 +65,8 @@ export class VideoSystem{
     }
 
     startLive(){
-        if(this.data.type != Types.LIVE && !this.started){
-            this.data.type = Types.LIVE
+        if(this.data.type != VideoSystemTypes.LIVE && !this.started){
+            this.data.type = VideoSystemTypes.LIVE
             this.start()
         }
     }
@@ -103,7 +103,7 @@ export class VideoSystem{
           this.playing = true
           this.texture.playing = false
 
-          if(this.data.offType == Types.PLAYLIST){
+          if(this.data.offType == VideoSystemTypes.PLAYLIST){
             this.playlist.start()
           }
           else{
@@ -121,7 +121,7 @@ export class VideoSystem{
     }
 
     stop(){
-        if(this.data.type == Types.LIVE){
+        if(this.data.type == VideoSystemTypes.LIVE){
             this.texture.playing = false
             this.live = false
             this.playing = false
@@ -136,7 +136,7 @@ export class VideoSystem{
         if(vol){
             this.data.volume = vol
         }
-        if(this.data.type == Types.LIVE){
+        if(this.data.type == VideoSystemTypes.LIVE){
             engine.addSystem(this)
         }
         else{
