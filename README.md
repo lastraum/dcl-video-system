@@ -26,8 +26,8 @@ To use any of the helpers provided by this library:
 ```ts
 let videoSystem = new vs.VideoSystem({
    emission: 1.2,
-   type: vs.Types.LIVE,
-   offType: vs.Types.PLAYLIST,
+   type: vs.VideoSystemTypes.LIVE,
+   offType: vs.VideoSystemTypes.PLAYLIST,
    liveLink: "https://streams.com/live/ets/livestream.m3u8",
    playList:[
      "https://player.vimeo.com/external/232323.m3u8?s=134343433434",
@@ -42,7 +42,7 @@ videoSystem.start(.1)
 ```ts
 let ent = new Entity()
 ent.addComponent(new PlaneShape())
-ent.addComponent(videoSystem.mat)
+ent.addComponent(videoSystem.material)
 ent.addComponent(new Transform({position: new Vector3(16,5,16), rotation:Quaternion.Euler(0,180,0), scale: new Vector3(16,9,1)}))
 engine.addEntity(ent)
 ```
