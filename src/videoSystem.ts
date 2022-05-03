@@ -85,6 +85,7 @@ export class VideoSystem{
               this.playlist.reset()
           }
 
+          this.texture.playing = false
           this.texture = new VideoTexture(liveFeed);
           this.texture.playing = true
           this.texture.volume = this.data.volume ? this.data.volume : 1
