@@ -8,12 +8,13 @@ export enum VideoSystemTypes{
 export type VideoSystemConfig = {
     type:VideoSystemTypes,
     offType:VideoSystemTypes,
-    liveLink:string,
+    liveLink?:string,
     playList?:string[],
     offImage?:string,
     emission:number,
     volume?:number
-    noLoop?:boolean
+    noLoop?:boolean,
+    id?: number | string
 }
 
 export class VideoSystem{
@@ -28,9 +29,9 @@ export class VideoSystem{
 
     constructor(data:VideoSystemConfig){
         this.data = data
-        this.texture = new VideoTexture(new VideoClip(this.data.liveLink))
+        this.data.type == VideoSystemTypes.LIVE ? this.texture = new VideoTexture(new VideoClip(this.data.liveLink)) : null
         this.material = new Material()
-        this.playlist = new VideoPlaylist(this, this.material, this.data.playList, this.data.noLoop ? this.data.noLoop : undefined)
+        this.data.offType == VideoSystemTypes.PLAYLIST ? this.playlist = new VideoPlaylist(this, this.material, this.data.playList, this.data.noLoop ? this.data.noLoop : undefined) : null
     }
     
     update(dt:number){
