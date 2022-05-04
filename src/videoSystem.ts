@@ -29,7 +29,7 @@ export class VideoSystem{
 
     constructor(data:VideoSystemConfig){
         this.data = data
-        this.data.type == VideoSystemTypes.LIVE ? this.texture = new VideoTexture(new VideoClip(this.data.liveLink)) : null
+        this.texture = new VideoTexture(new VideoClip(""))
         this.material = new Material()
         this.data.offType == VideoSystemTypes.PLAYLIST ? this.playlist = new VideoPlaylist(this, this.material, this.data.playList, this.data.noLoop ? this.data.noLoop : undefined) : null
     }
