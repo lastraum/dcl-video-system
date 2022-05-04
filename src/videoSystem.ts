@@ -234,7 +234,7 @@ export class VideoSystem{
 
     start(){
         this.playing = true
-        this.timer = 0
+        //this.timer = 0
         engine.addSystem(this)
     }
 
