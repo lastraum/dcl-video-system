@@ -3,36 +3,47 @@ export enum VideoSystemTypes{
     LIVE,
     PLAYLIST,
     NONE
-}
-
-export type VideoSystemConfig = {
+  }
+  
+  export type VideoSystemConfig = {
     type:VideoSystemTypes,
     offType:VideoSystemTypes,
     liveLink?:string,
-    playList?:string[],
+    playlist?:string[],
     offImage?:string,
     emission:number,
-    volume?:number
+    volume:number
     noLoop?:boolean,
-    id?: number | string
-}
-
-export class VideoSystem{
+    id: number | string,
+    isLive?: boolean,
+    playlistEnabled?:boolean,
+    refreshRate?:number
+  }
+  
+  export class VideoSystem{
+    refresh = 5
     timer = 0
     live = false
     playing = false
     started = false
-    texture: any
+    texture: VideoTexture
     material: Material
     data:VideoSystemConfig
     playlist?:VideoPlaylist
-
+  
     constructor(data:VideoSystemConfig){
         this.data = data
+        log('video system data is', this.data)
+
+        if(data.refreshRate){
+            this.refresh = data.refreshRate
+        }
+        
         this.texture = new VideoTexture(new VideoClip(""))
         this.material = new Material()
-        this.material.albedoColor = Color4.Black()
-        this.data.offType == VideoSystemTypes.PLAYLIST ? this.playlist = new VideoPlaylist(this, this.material, this.data.playList, this.data.noLoop ? this.data.noLoop : undefined) : null
+        if(this.data.offType == VideoSystemTypes.PLAYLIST){
+            this.playlist = new VideoPlaylist(this, this.material, this.data.playlist!, this.data.noLoop ? this.data.noLoop : undefined) 
+        }
     }
     
     update(dt:number){
@@ -41,19 +52,21 @@ export class VideoSystem{
                 this.timer -= dt
             }
             else{
-                this.timer = 5
+                this.timer = this.refresh
                 try{
-                    fetch(this.data.liveLink!).then((r) => {
-                          if(r.status < 400){
+                  executeTask((async()=>{
+                      log('trying to fetch video link')
+                      let res = await fetch(this.data.liveLink!)
+                          if(res.status < 400){
                             this.playing = false
-                            log("Currently Live.")
+                            log("Currently Live. -> ", this.data.liveLink!)
                             this.goOnline() 
                         }
                         else{
                          // log('not live')
                           this.goOffline()
                         }
-                    })
+                  }))
                 }
                 catch(e){
                        log("video no live")
@@ -61,11 +74,13 @@ export class VideoSystem{
             }
         }
     }
-
+  
     setVolume(vol:number){
         this.data.volume = vol
+      //   this.texture.volume = vol
+        this.playlist!.setVolume(vol)
     }
-
+  
     startLive(){
         if(this.data.type != VideoSystemTypes.LIVE && !this.started){
             this.data.type = VideoSystemTypes.LIVE
@@ -79,20 +94,20 @@ export class VideoSystem{
         log('online')
           this.live = true;
           let liveFeed = new VideoClip(this.data.liveLink!);
-
+  
           log('live feed is ', + this.data.liveLink!)
-
+  
           if(this.data.offType == VideoSystemTypes.PLAYLIST){
             if(this.playlist!.playing){
               this.playlist!.reset()
           }
           }
-
+  
           this.texture.playing = false
           this.texture = new VideoTexture(liveFeed);
           this.texture.playing = true
-          this.texture.volume = this.data.volume ? this.data.volume : 1
-
+          this.texture.volume = this.data.volume;
+  
           this.material.albedoTexture = this.texture;
           this.material.emissiveTexture = this.texture;
           this.material.emissiveIntensity = this.data.emission
@@ -107,38 +122,46 @@ export class VideoSystem{
           this.live = false;
           this.playing = true
           this.texture.playing = false
-
-        if(this.data.offType == VideoSystemTypes.PLAYLIST){
-            log('video system is offline, we need to play the playlist')
-             this.playlist!.start()
-        }
-        else{
-            log('we need to show black screen')
-          this.texture = new VideoTexture(new VideoClip(""))
+  
+          if(this.data.offType == VideoSystemTypes.PLAYLIST){
+              log('video system is offline, we need to play the playlist')
+            this.playlist!.start()
+          }
+          else{
+            this.texture = new VideoTexture(new VideoClip(""))
+            this.playing = false
+          }
+  
+          this.texture.volume = this.data.volume;
           this.material.albedoTexture = this.texture;
           this.material.emissiveTexture = this.texture;
-          this.material.albedoColor = Color4.Black()
-        }
+  
+          this.texture.playing = true
+          this.texture.loop = true
           log('offline')
       }
     }
-
+  
     stop(){
-        switch(this.data.type){
-            case VideoSystemTypes.LIVE:
-              this.texture.playing = false
-              this.live = false
-              this.playing = false
-              this.started = false
-              engine.removeSystem(this)
-              break;
-          }
-      
-          if(this.playlist){
-              this.playlist.stop()
+  
+      log('stopping video system')
+      log(this.data.type)
+  
+      switch(this.data.type){
+        case VideoSystemTypes.LIVE:
+          this.texture.playing = false
+          this.live = false
+          this.playing = false
+          this.started = false
+          engine.removeSystem(this)
+          break;
+      }
+  
+      if(this.playlist){
+          this.playlist.stop()
         }
-    }
-
+      }
+  
     start(vol?:number){
       log('starting live system')
         this.started = true
@@ -149,12 +172,12 @@ export class VideoSystem{
             engine.addSystem(this)
         }
         else{
-            log('need to start video playlist system')
+            log('need to start video system')
             this.playlist!.setVolume(this.data.volume ? this.data.volume : 1)
             this.playlist!.start()
         }
     }
-
+  
     off(){
         log('we are here, lets turn off')
         this.texture = new VideoTexture(new VideoClip(""))
@@ -166,50 +189,34 @@ export class VideoSystem{
         //     this.material.emissiveTexture = new Texture(this.data.offImage ? this.data.offImage : "")
         // }
     }
-
-    pause(){
-        switch(this.data.type){
-            case VideoSystemTypes.LIVE:
-              this.texture.playing = false
-              this.live = false
-              this.playing = false
-              this.started = false
-              engine.removeSystem(this)
-              break;
-          }
-
-        if(this.data.type == VideoSystemTypes.PLAYLIST || this.data.offType == VideoSystemTypes.PLAYLIST){
-            this.playlist!.pause()
-        }
-    }
   }
-
+  
   class VideoPlaylist{
-
+  
     index = -1
     timer = 0
     playing = false
-    stopped = false
-
+  
     parentSystem:VideoSystem
     material: Material
     texture:VideoTexture
     links: any
     exists = false
-    volume = 1
+    volume: number = 0
     noLoop = false
-    
-
-    constructor(system:VideoSystem, mat:Material, links:any, noLoop?:boolean){
+  
+    constructor(system:VideoSystem, mat:Material, links:string[], noLoop?:boolean){
         this.parentSystem = system
         this.material = mat
         this.links = links
+        this.volume = system.data.volume
         this.texture = new VideoTexture(new VideoClip(this.links[0]))
+        this.texture.volume = this.volume
         if(noLoop){
             this.noLoop = noLoop
         }
     }
-
+  
     update(dt:number){
         if(this.playing){
             if(this.timer > 0){
@@ -232,6 +239,7 @@ export class VideoSystem{
                 }
                 else{
                     if(this.index >= this.links.length){
+                        log('we have reached the end of the video playlist; restart')
                         this.index = 0
                     }
                     this.timer = 500
@@ -240,70 +248,59 @@ export class VideoSystem{
             }
         }
     }
-
+  
     setVolume(vol:number){
-        this.volume = vol 
+        this.volume = vol
+        this.texture.volume = vol 
     }
-
+  
     stop(){
         this.playing = false
         this.texture.playing = false
-        engine.removeSystem(this)
-
-        this.parentSystem.off()
-        this.stopped = true
-    }
-
-    pause(){
-        log('pausing playlist')
-        this.playing = false
-        this.texture.playing = false
+        this.parentSystem.playing = false
         engine.removeSystem(this)
     }
-
+  
     reset(){
-        //this.stop()
+        this.stop()
         this.timer = 0
         this.index = -1
     }
-
+  
     start(){
-        if(this.stopped){
-            this.reset()
-            this.stopped = false
-        }
-
+        this.reset()
         this.playing = true
-        this.texture.playing = true
-        //this.timer = 0
+        this.parentSystem.playing = true
         engine.addSystem(this)
-
+  
+  
         onVideoEvent.add((data) => {
-            if(data.videoStatus == 4){
-                this.timer = data.totalVideoLength
-                onVideoEvent.clear()
-            }
-          })
+          if(data.videoStatus == 4){
+              this.timer = data.totalVideoLength
+              onVideoEvent.clear()
+          }
+        })
     }
-
+  
     playVideo(index: number){
+        log("playing new video in playlist")
         this.texture.playing = false
         this.texture = new VideoTexture(new VideoClip(this.links[this.index]))
         this.material.albedoTexture = this.texture
         this.material.emissiveTexture = this.texture
-
+  
         this.material.emissiveIntensity = this.parentSystem.data.emission
         this.material.emissiveColor = Color3.White()
         this.material.roughness = 1
         this.texture.playing = true
         this.texture.volume = this.volume
-
+  
         onVideoEvent.add((data) => {
-            if(data.videoStatus == 4){
-                this.timer = data.totalVideoLength
-                onVideoEvent.clear()
-            }
-          })
+          if(data.videoStatus == 4){
+              this.timer = data.totalVideoLength
+              onVideoEvent.clear()
+          }
+        })
     }
-
-}
+  
+  }
